@@ -16,7 +16,7 @@ Will validate `UTF-8/16` files both with/without a [byte order mark](https://en.
 - [Reference](#reference)
 
 ## Usage
-Module [`encdect.py`](encdect.py) provides a single `EncodingDetectFile` class and a [`load()`](encdect.py#L140) method.
+Module [`encdect.py`](encdect.py) provides a single `EncodingDetectFile` class and a [`load()`](encdect.py#L144) method:
 - Successful detection returns a tuple of `(encoding,bom_marker,file_unicode)`.
 - Failure (unable to determine) returns `False`.
 
@@ -98,8 +98,8 @@ End of line (EOL) characters (`\r\n`) are counted in odd/even positions of the f
 - Alternatively if all EOL characters are in _odd_ file positions return result of `UTF-16LE`.
 
 Relying on the fact that text files generally have a high ratio of characters in the `1 -> 127` range, two byte sequences of `[0,1 -> 127]` or `[1 -> 127,0]` will be common. Null bytes are counted in both odd and even positions:
-- If null byte odd count is _above_ positive threshold and null byte even count _below_ negative threshold, return result of `UTF-16BE`.
-- If null byte odd count is _below_ negative threshold and null byte even count _above_ positive threshold, return result of `UTF-16LE`.
+- If null byte odd count _above_ positive threshold and even count _below_ negative threshold, return result of `UTF-16BE`.
+- If null byte odd count _below_ negative threshold and even count _above_ positive threshold, return result of `UTF-16LE`.
 
 ## Test
 A detection of sample files with various encoding formats can be run via [`test/detect.py`](test/detect.py).
