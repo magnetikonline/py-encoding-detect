@@ -65,7 +65,9 @@ if (result):
 ## Detection methods
 Routines used are based on the work of the C++/C# library https://github.com/AutoIt/text-encoding-detect, with minor tweaks/optimizations.
 
-An overview of detection steps follows, if _all steps_ are passed without a positive result then detection is considered _not possible_:
+If _all steps_ are passed without a positive result then detection is considered _not possible_.
+
+An overview of detection steps follows:
 
 ### Byte order mark (BOM)
 First step looks for a byte order mark in the first 2-3 bytes of the file, specifically (in this order):
@@ -93,13 +95,16 @@ If end of file reached and above rules remain true:
 ### UTF-16BE/UTF-16LE
 Final step for `UTF-16` involves two methods.
 
+#### Method 1
 End of line (EOL) characters (`\r\n`) are counted in odd/even positions of the file stream:
 - If all EOL characters are in _even_ file positions return result of `UTF-16BE`.
 - Alternatively if all EOL characters are in _odd_ file positions return result of `UTF-16LE`.
 
-Relying on the fact that text files generally have a high ratio of characters in the `1 -> 127` range, two byte sequences of `[0,1 -> 127]` or `[1 -> 127,0]` will be common. Null bytes are counted in both odd and even positions:
-- If null byte odd count _above_ positive threshold and even count _below_ negative threshold, return result of `UTF-16BE`.
-- If null byte odd count _below_ negative threshold and even count _above_ positive threshold, return result of `UTF-16LE`.
+#### Method 2
+Relying on the fact that text files generally have a high ratio of characters in the `1 -> 127` range, two byte sequences of `[0,1 -> 127]` or `[1 -> 127,0]` should be common.
+- Total of null bytes are counted in both odd and even positions.
+- If odd count _above_ positive threshold and even count _below_ negative threshold, return result of `UTF-16BE`.
+- If odd count _below_ negative threshold and even count _above_ positive threshold, return result of `UTF-16LE`.
 
 ## Test
 A detection of sample files with various encoding formats can be run via [`test/detect.py`](test/detect.py).
