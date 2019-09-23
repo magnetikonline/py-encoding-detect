@@ -67,33 +67,35 @@ Routines used are based on the work of the C++/C# library https://github.com/Aut
 
 If _all steps_ are passed without a positive result then detection is considered _not possible_.
 
-An overview of detection steps follows:
+An overview of detection steps in the order tested:
 
 ### Byte order mark (BOM)
-First step looks for a byte order mark in the first 2-3 bytes of the file, specifically (in this order):
+Looks for a byte order mark in the first 2-3 bytes of the file, in the following order:
 - `UTF-16BE` (2 bytes)
 - `UTF-16LE` (2 bytes)
 - `UTF-8` (3 bytes, fairly rare)
 
-If a BOM is found it is assumed to be valid for the file and detection finishes.
+If BOM is found it is assumed to be valid and detection finishes.
 
 ### ASCII/UTF-8
-If no BOM found, step determines if file is either `ASCII` or `UTF-8`. Process overview:
-- Single byte is read from the file.
+If no BOM found, determine if file is either `ASCII` or `UTF-8`:
+- Single byte read from file.
 - Value determines how many additional bytes [define the character](https://en.wikipedia.org/wiki/UTF-8#Codepage_layout):
 	- `1 -> 127` no additional (ASCII).
 	- `194 -> 223` 1 additional.
 	- `224 -> 239` 2 additional.
 	- `240 -> 244` 3 additional.
-- Additional bytes are walked over - each must be within the bounds of `128 -> 191`.
+- Additional bytes walked over - each must be within the bounds of `128 -> 191`.
 - Return to first step and repeat until end of file.
 
 If end of file reached and above rules remain true:
-- With all bytes between ranges of `1 -> 127` return result of `ASCII`.
-- Else result if `UTF-8`.
+- With all bytes between range of `1 -> 127` result of `ASCII`.
+- Else result of `UTF-8`.
+
+If rules were not met, move onto next detection.
 
 ### UTF-16BE/UTF-16LE
-Final step for `UTF-16` involves two methods.
+Final step for `UTF-16` detection involves two methods.
 
 #### Method 1
 End of line (EOL) characters (`\r\n`) are counted in odd/even positions of the file stream:

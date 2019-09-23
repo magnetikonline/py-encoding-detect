@@ -18,7 +18,7 @@ class EncodingDetectFile:
 		def result(encoding,bom_marker):
 			return (encoding,bom_marker,None)
 
-		# test 2 byte utf-16 BOMs
+		# test 2 byte UTF-16 BOMs
 		file_data = bytearray(fh.read(2))
 		if (file_data == EncodingDetectFile.BOM_UTF_16_BE):
 			return result(
@@ -32,7 +32,7 @@ class EncodingDetectFile:
 				EncodingDetectFile.BOM_UTF_16_LE
 			)
 
-		# test 3 byte utf-8 BOM
+		# test 3 byte UTF-8 BOM
 		file_data.append(fh.read(1))
 		if (file_data == EncodingDetectFile.BOM_UTF_8):
 			return result(
@@ -55,7 +55,7 @@ class EncodingDetectFile:
 					ascii_chars_only = False
 					continue
 
-				# not ASCII/utf-8
+				# not ASCII or UTF-8
 				return False
 
 			# determine byte length of character
@@ -79,14 +79,14 @@ class EncodingDetectFile:
 				byte_follow = 3
 				continue
 
-			# not ASCII/utf-8
+			# not ASCII or UTF-8
 			return False
 
-		# end of file data [byte_follow] must be zero to ensure last character completed
+		# end of file data [byte_follow] must be zero to ensure last character was consumed
 		if (byte_follow):
 			return False
 
-		# success - ASCII or utf-8 result
+		# success - return ASCII or UTF-8 result
 		return (
 			EncodingDetectFile.ENCODING_ASCII
 			if (ascii_chars_only)
@@ -138,7 +138,7 @@ class EncodingDetectFile:
 			if ((null_byte_odd < threshold_negative) and (null_byte_even > threshold_positive)):
 				return EncodingDetectFile.ENCODING_UTF_16_LE
 
-		# not utf-16 - or insufficient data to determine with confidence
+		# not UTF-16 - or insufficient data to determine with confidence
 		return False
 
 	def load(self,file_path):
@@ -158,19 +158,19 @@ class EncodingDetectFile:
 		file_data.extend(fh.read())
 		fh.close()
 
-		# test for ASCII/utf-8
+		# test for ASCII/UTF-8
 		file_encoding = self._detect_ascii_utf8(file_data)
 		if (file_encoding):
-			# file is ASCII or utf-8 without a BOM
+			# file is ASCII or UTF-8 (without BOM)
 			return (
 				file_encoding,None,
 				file_data.decode(file_encoding)
 			)
 
-		# test for utf-16
+		# test for UTF-16
 		file_encoding = self._detect_utf16(file_data)
 		if (file_encoding):
-			# file is utf-16(-like) without a BOM
+			# file is UTF-16(-like) (without BOM)
 			return (
 				file_encoding,None,
 				file_data.decode(file_encoding)
