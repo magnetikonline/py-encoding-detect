@@ -1,4 +1,5 @@
 # Encoding detect
+
 Python module for detecting the following encodings of a text file:
 - `ASCII`
 - `UTF-8`
@@ -16,6 +17,7 @@ Will validate `UTF-8/16` files both with/without a [byte order mark](https://en.
 - [Reference](#reference)
 
 ## Usage
+
 Module [`encdect.py`](encdect.py) provides a single `EncodingDetectFile` class and a [`load()`](encdect.py#L144) method:
 - Successful detection returns a tuple of `(encoding,bom_marker,file_unicode)`.
 - Failure (unable to determine) returns `False`.
@@ -63,6 +65,7 @@ if (result):
 ```
 
 ## Detection methods
+
 Routines used are based on the work of the C++/C# library https://github.com/AutoIt/text-encoding-detect, with minor tweaks/optimizations.
 
 If _all steps_ are passed without a positive result then detection is considered _not possible_.
@@ -70,7 +73,9 @@ If _all steps_ are passed without a positive result then detection is considered
 An overview of detection steps in the order tested:
 
 ### Byte order mark (BOM)
+
 Looks for a byte order mark in the first 2-3 bytes of the file, in the following order:
+
 - `UTF-16BE` (2 bytes)
 - `UTF-16LE` (2 bytes)
 - `UTF-8` (3 bytes, fairly rare)
@@ -78,7 +83,9 @@ Looks for a byte order mark in the first 2-3 bytes of the file, in the following
 If BOM is found it is assumed to be valid and detection finishes.
 
 ### ASCII/UTF-8
+
 If no BOM found, determine if file is either `ASCII` or `UTF-8`:
+
 - Single byte read from file.
 - Value determines how many additional bytes [define the character](https://en.wikipedia.org/wiki/UTF-8#Codepage_layout):
 	- `1 -> 127` no additional (ASCII).
@@ -89,29 +96,37 @@ If no BOM found, determine if file is either `ASCII` or `UTF-8`:
 - Return to first step and repeat until end of file.
 
 If end of file reached and above rules remain true:
+
 - With all bytes between range of `1 -> 127` result of `ASCII`.
 - Else result of `UTF-8`.
 
 If rules were not met, move onto next detection.
 
 ### UTF-16BE/UTF-16LE
+
 Final step for `UTF-16` detection involves two methods.
 
 #### Method 1
+
 End of line (EOL) characters (`\r\n`) are counted in odd/even positions of the file stream:
+
 - If all EOL characters are in _even_ file positions return result of `UTF-16BE`.
 - Alternatively if all EOL characters are in _odd_ file positions return result of `UTF-16LE`.
 
 #### Method 2
-Relying on the fact that text files generally have a high ratio of characters in the `1 -> 127` range, two byte sequences of `[0,1 -> 127]` or `[1 -> 127,0]` should be common.
+
+Relying on the fact that text files generally have a high ratio of characters in the `1 -> 127` range, two byte sequences of `[0,1 -> 127]` or `[1 -> 127,0]` should be common:
+
 - Total of null bytes are counted in both odd and even positions.
 - If odd count _above_ positive threshold and even count _below_ negative threshold, return result of `UTF-16BE`.
 - If odd count _below_ negative threshold and even count _above_ positive threshold, return result of `UTF-16LE`.
 
 ## Test
+
 A detection of sample files with various encoding formats can be run via [`test/detect.py`](test/detect.py).
 
 ## Reference
+
 - https://docs.python.org/2/howto/unicode.html
 - https://docs.python.org/2/library/codecs.html
 - https://github.com/AutoIt/text-encoding-detect
